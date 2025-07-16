@@ -3,7 +3,7 @@ class Teacher {
   final String nama_lengkap;
   final String nip;
   final String email;
-  final int mata_kuliah_id;
+  final String nama_matkul;
   final String nomor_handphone;
   final String? password;
 
@@ -12,7 +12,7 @@ class Teacher {
     required this.nip,
     required this.nama_lengkap,
     required this.email,
-    required this.mata_kuliah_id,
+    required this.nama_matkul,
     required this.nomor_handphone,
     this.password, // Dibuat opsional
   });
@@ -23,7 +23,7 @@ class Teacher {
       nama_lengkap: json['nama_lengkap'] ?? '', // Provide default value
       nip: json['nip'] ?? '',
       email: json['email'] ?? '',
-      mata_kuliah_id: json['mata_kuliah_id'] ?? 0,
+      nama_matkul: json['nama_matkul'] ?? '',
       nomor_handphone: json['nomor_handphone'] ?? '',
       password: json['password'], // Password can be null
     );
@@ -35,7 +35,7 @@ class Teacher {
       "nama_lengkap": nama_lengkap,
       "nip": nip,
       "email": email,
-      "mata_kuliah_id": mata_kuliah_id,
+      "nama_matkul": nama_matkul,
       "nomor_handphone": nomor_handphone,
      "password": password,
     };

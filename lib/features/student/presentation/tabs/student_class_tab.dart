@@ -7,28 +7,28 @@ class StudentClassTab extends StatelessWidget {
 
   // Data dummy untuk daftar kelas
   final List<ClassModel> dummyClasses = [
-    ClassModel(
-      id: '1',
-      classId: 'C10A',
-      className: 'Kelas 10A',
-      teacherName: 'Budi Santoso',
-      subjectName: 'Matematika',
-      startTime: '07:00',
-      endTime: '08:30',
-      room: 'R-101',
-      studentCount: 30,
-    ),
-    ClassModel(
-      id: '2',
-      classId: 'C11B',
-      className: 'Kelas 11B',
-      teacherName: 'Siti Aminah',
-      subjectName: 'Fisika',
-      startTime: '09:00',
-      endTime: '10:30',
-      room: 'R-202',
-      studentCount: 32,
-    ),
+    // ClassModel(
+    //   id: '1',
+    //   classId: 'C10A',
+    //   className: 'Kelas 10A',
+    //   teacherName: 'Budi Santoso',
+    //   subjectName: 'Matematika',
+    //   startTime: '07:00',
+    //   endTime: '08:30',
+    //   room: 'R-101',
+    //   studentCount: 30,
+    // ),
+    // ClassModel(
+    //   id: '2',
+    //   classId: 'C11B',
+    //   className: 'Kelas 11B',
+    //   teacherName: 'Siti Aminah',
+    //   subjectName: 'Fisika',
+    //   startTime: '09:00',
+    //   endTime: '10:30',
+    //   room: 'R-202',
+    //   studentCount: 32,
+    // ),
   ];
 
   @override

@@ -29,7 +29,7 @@ class _AddEditTeacherPageState extends State<AddEditTeacherPage> {
     _nipController = TextEditingController(text: widget.teacher?.nip ?? '');
     _fullNameController = TextEditingController(text: widget.teacher?.nama_lengkap ?? '');
     _emailController = TextEditingController(text: widget.teacher?.email ?? '');
-    _subjectController = TextEditingController(text: widget.teacher?.mata_kuliah_id.toString() ?? '');
+    _subjectController = TextEditingController(text: widget.teacher?.nama_matkul ?? '');
     _phoneController = TextEditingController(text: widget.teacher?.nomor_handphone ?? '');
 
   }
@@ -56,7 +56,7 @@ class _AddEditTeacherPageState extends State<AddEditTeacherPage> {
       nama_lengkap: _fullNameController.text,
       nip: _nipController.text,
       email: _emailController.text,
-      mata_kuliah_id: int.tryParse(_subjectController.text) ?? 0,
+      nama_matkul: _subjectController.text,
       nomor_handphone: _phoneController.text,
       password: _passwordController.text.isNotEmpty ? _passwordController.text : null,
     );

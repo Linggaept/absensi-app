@@ -16,7 +16,7 @@ class _AddEditStudentPageState extends State<AddEditStudentPage> {
   late TextEditingController _nisController;
   late TextEditingController _fullNameController;
   late TextEditingController _emailController;
-  late TextEditingController _classController;
+  late TextEditingController _kelasIdController;
   late TextEditingController _phoneController;
   late TextEditingController _passwordController;
   bool _isEditMode = false;
@@ -28,7 +28,7 @@ class _AddEditStudentPageState extends State<AddEditStudentPage> {
     _nisController = TextEditingController(text: widget.student?.nis ?? '');
     _fullNameController = TextEditingController(text: widget.student?.fullName ?? '');
     _emailController = TextEditingController(text: widget.student?.email ?? '');
-    _classController = TextEditingController(text: widget.student?.className ?? '');
+    _kelasIdController = TextEditingController(text: widget.student?.kelasId.toString() ?? '');
     _phoneController = TextEditingController(text: widget.student?.phoneNumber ?? '');
     _passwordController = TextEditingController();
   }
@@ -38,7 +38,7 @@ class _AddEditStudentPageState extends State<AddEditStudentPage> {
     _nisController.dispose();
     _fullNameController.dispose();
     _emailController.dispose();
-    _classController.dispose();
+    _kelasIdController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -47,11 +47,11 @@ class _AddEditStudentPageState extends State<AddEditStudentPage> {
   void _saveForm() {
     if (_formKey.currentState!.validate()) {
       final studentData = Student(
-        id: widget.student?.id ?? '',
+        id: widget.student?.id ?? 0,
         nis: _nisController.text,
         fullName: _fullNameController.text,
         email: _emailController.text,
-        className: _classController.text,
+        kelasId: int.parse(_kelasIdController.text),
         phoneNumber: _phoneController.text,
         password: _passwordController.text.isNotEmpty ? _passwordController.text : null,
       );
@@ -64,8 +64,10 @@ class _AddEditStudentPageState extends State<AddEditStudentPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primary,
-        title: Text(widget.student == null ? 'Tambah Siswa' : 'Edit Siswa',
-            style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold)),
+        title: Text(
+          widget.student == null ? 'Tambah Siswa' : 'Edit Siswa',
+          style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold)
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -74,24 +76,93 @@ class _AddEditStudentPageState extends State<AddEditStudentPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextFormField(controller: _nisController, decoration: const InputDecoration(labelText: 'NIS (Nomor Induk Siswa)'), keyboardType: TextInputType.number, validator: (value) => (value?.isEmpty ?? true) ? 'NIS tidak boleh kosong' : null),
+              TextFormField(
+                controller: _nisController,
+                decoration: const InputDecoration(
+                  labelText: 'NIS (Nomor Induk Siswa)',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) => (value?.isEmpty ?? true) ? 'NIS tidak boleh kosong' : null,
+              ),
               const SizedBox(height: 16),
-              TextFormField(controller: _fullNameController, decoration: const InputDecoration(labelText: 'Nama Lengkap'), validator: (value) => (value?.isEmpty ?? true) ? 'Nama tidak boleh kosong' : null),
+              TextFormField(
+                controller: _fullNameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nama Lengkap',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) => (value?.isEmpty ?? true) ? 'Nama tidak boleh kosong' : null,
+              ),
               const SizedBox(height: 16),
-              TextFormField(controller: _emailController, decoration: const InputDecoration(labelText: 'Email'), keyboardType: TextInputType.emailAddress, validator: (value) => (value?.isEmpty ?? true) || !value!.contains('@') ? 'Masukkan email yang valid' : null),
+              TextFormField(
+                controller: _emailController,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value?.isEmpty ?? true) {
+                    return 'Email tidak boleh kosong';
+                  }
+                  if (!value!.contains('@')) {
+                    return 'Masukkan email yang valid';
+                  }
+                  return null;
+                },
+              ),
               const SizedBox(height: 16),
-              TextFormField(controller: _classController, decoration: const InputDecoration(labelText: 'Kelas'), validator: (value) => (value?.isEmpty ?? true) ? 'Kelas tidak boleh kosong' : null),
+              TextFormField(
+                controller: _kelasIdController,
+                decoration: const InputDecoration(
+                  labelText: 'Kelas ID',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value?.isEmpty ?? true) {
+                    return 'Kelas ID tidak boleh kosong';
+                  }
+                  if (int.tryParse(value!) == null) {
+                    return 'Kelas ID harus berupa angka';
+                  }
+                  return null;
+                },
+              ),
               const SizedBox(height: 16),
-              TextFormField(controller: _phoneController, decoration: const InputDecoration(labelText: 'Nomor Handphone'), keyboardType: TextInputType.phone, validator: (value) => (value?.isEmpty ?? true) ? 'Nomor handphone tidak boleh kosong' : null),
+              TextFormField(
+                controller: _phoneController,
+                decoration: const InputDecoration(
+                  labelText: 'Nomor Handphone',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.phone,
+                validator: (value) => (value?.isEmpty ?? true) ? 'Nomor handphone tidak boleh kosong' : null,
+              ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _passwordController,
-                decoration: InputDecoration(labelText: 'Password', hintText: _isEditMode ? 'Kosongkan jika tidak ingin mengubah' : null),
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  border: const OutlineInputBorder(),
+                  hintText: _isEditMode ? 'Kosongkan jika tidak ingin mengubah' : null,
+                ),
                 obscureText: true,
-                validator: (value) => !_isEditMode && (value == null || value.isEmpty) ? 'Password tidak boleh kosong' : null,
+                validator: (value) => !_isEditMode && (value == null || value.isEmpty) 
+                    ? 'Password tidak boleh kosong' 
+                    : null,
               ),
               const SizedBox(height: 24),
-              ElevatedButton(onPressed: _saveForm, style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)), child: const Text('Simpan')),
+              ElevatedButton(
+                onPressed: _saveForm,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: const Text('Simpan'),
+              ),
             ],
           ),
         ),

@@ -14,55 +14,51 @@ class AddEditSubjectPage extends StatefulWidget {
 
 class _AddEditSubjectPageState extends State<AddEditSubjectPage> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _subjectIdController;
-  late TextEditingController _subjectNameController;
-  late TextEditingController _subjectCodeController;
-  late TextEditingController _majorController;
-  late TextEditingController _creditsController;
-  late TextEditingController _descriptionController;
+  late TextEditingController _namaMatkulController;
+  late TextEditingController _kodeMatkulController;
+  late TextEditingController _jurusanController;
+  late TextEditingController _pertemuanController;
+  late TextEditingController _deskripsiController;
 
   @override
   void initState() {
     super.initState();
-    _subjectIdController = TextEditingController(
-      text: widget.subject?.subjectId ?? '',
+    _namaMatkulController = TextEditingController(
+      text: widget.subject?.namaMatkul ?? '',
     );
-    _subjectNameController = TextEditingController(
-      text: widget.subject?.subjectName ?? '',
+    _kodeMatkulController = TextEditingController(
+      text: widget.subject?.kodeMatkul ?? '',
     );
-    _subjectCodeController = TextEditingController(
-      text: widget.subject?.subjectCode ?? '',
+    _jurusanController = TextEditingController(
+      text: widget.subject?.jurusan ?? '',
     );
-    _majorController = TextEditingController(text: widget.subject?.major ?? '');
-    _creditsController = TextEditingController(
-      text: widget.subject?.credits.toString() ?? '',
+    _pertemuanController = TextEditingController(
+      text: widget.subject?.pertemuan.toString() ?? '',
     );
-    _descriptionController = TextEditingController(
-      text: widget.subject?.description ?? '',
+    _deskripsiController = TextEditingController(
+      text: widget.subject?.deskripsi ?? '',
     );
   }
 
   @override
   void dispose() {
-    _subjectIdController.dispose();
-    _subjectNameController.dispose();
-    _subjectCodeController.dispose();
-    _majorController.dispose();
-    _creditsController.dispose();
-    _descriptionController.dispose();
+    _namaMatkulController.dispose();
+    _kodeMatkulController.dispose();
+    _jurusanController.dispose();
+    _pertemuanController.dispose();
+    _deskripsiController.dispose();
     super.dispose();
   }
 
   void _saveForm() {
     if (_formKey.currentState!.validate()) {
       final subjectData = Subject(
-        id: widget.subject?.id ?? '',
-        subjectId: _subjectIdController.text,
-        subjectName: _subjectNameController.text,
-        subjectCode: _subjectCodeController.text,
-        major: _majorController.text,
-        credits: int.tryParse(_creditsController.text) ?? 0,
-        description: _descriptionController.text,
+        id: widget.subject?.id ?? 0,
+        namaMatkul: _namaMatkulController.text,
+        kodeMatkul: _kodeMatkulController.text,
+        jurusan: _jurusanController.text,
+        pertemuan: int.tryParse(_pertemuanController.text) ?? 0,
+        deskripsi: _deskripsiController.text.isEmpty ? null : _deskripsiController.text,
       );
       Navigator.of(context).pop(subjectData);
     }
@@ -89,13 +85,7 @@ class _AddEditSubjectPageState extends State<AddEditSubjectPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               TextFormField(
-                controller: _subjectIdController,
-                decoration: const InputDecoration(labelText: 'Mata Kuliah ID'),
-                validator: (v) => (v?.isEmpty ?? true) ? 'Wajib diisi' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _subjectNameController,
+                controller: _namaMatkulController,
                 decoration: const InputDecoration(
                   labelText: 'Nama Mata Kuliah',
                 ),
@@ -103,7 +93,7 @@ class _AddEditSubjectPageState extends State<AddEditSubjectPage> {
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: _subjectCodeController,
+                controller: _kodeMatkulController,
                 decoration: const InputDecoration(
                   labelText: 'Kode Mata Kuliah',
                 ),
@@ -111,13 +101,13 @@ class _AddEditSubjectPageState extends State<AddEditSubjectPage> {
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: _majorController,
+                controller: _jurusanController,
                 decoration: const InputDecoration(labelText: 'Jurusan'),
                 validator: (v) => (v?.isEmpty ?? true) ? 'Wajib diisi' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: _creditsController,
+                controller: _pertemuanController,
                 decoration: const InputDecoration(labelText: 'Pertemuan'),
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -125,7 +115,7 @@ class _AddEditSubjectPageState extends State<AddEditSubjectPage> {
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: _descriptionController,
+                controller: _deskripsiController,
                 decoration: const InputDecoration(
                   labelText: 'Deskripsi (Opsional)',
                 ),

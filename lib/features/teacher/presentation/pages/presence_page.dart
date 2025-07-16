@@ -16,30 +16,30 @@ class _PresencePageState extends State<PresencePage> {
   // Data dummy untuk daftar murid
   // Menggunakan model 'Student' yang sudah ada untuk konsistensi
   final List<Student> dummyStudents = [
-    Student(
-      id: 's1',
-      nis: '1001',
-      fullName: 'Ahmad',
-      email: 'ahmad@example.com',
-      className: '10A',
-      phoneNumber: '081',
-    ),
-    Student(
-      id: 's2',
-      nis: '1002',
-      fullName: 'Budi',
-      email: 'budi@example.com',
-      className: '10A',
-      phoneNumber: '082',
-    ),
-    Student(
-      id: 's3',
-      nis: '1003',
-      fullName: 'Citra',
-      email: 'citra@example.com',
-      className: '10A',
-      phoneNumber: '083',
-    ),
+    // Student(
+    //   id: 's1',
+    //   nis: '1001',
+    //   fullName: 'Ahmad',
+    //   email: 'ahmad@example.com',
+    //   className: '10A',
+    //   phoneNumber: '081',
+    // ),
+    // Student(
+    //   id: 's2',
+    //   nis: '1002',
+    //   fullName: 'Budi',
+    //   email: 'budi@example.com',
+    //   className: '10A',
+    //   phoneNumber: '082',
+    // ),
+    // Student(
+    //   id: 's3',
+    //   nis: '1003',
+    //   fullName: 'Citra',
+    //   email: 'citra@example.com',
+    //   className: '10A',
+    //   phoneNumber: '083',
+    // ),
   ];
 
   // Map untuk menyimpan status presensi
@@ -56,7 +56,7 @@ class _PresencePageState extends State<PresencePage> {
     super.initState();
     // Inisialisasi status presensi
     for (var student in dummyStudents) {
-      presenceStatus[student.id] = 'Alpa'; // Default status diubah menjadi Alpa
+      // presenceStatus[student.id] = 'Alpa'; // Default status diubah menjadi Alpa
     }
   }
 
@@ -91,7 +91,7 @@ class _PresencePageState extends State<PresencePage> {
     if (studentIndex != -1) {
       final studentId = dummyStudents[studentIndex].id;
       setState(() {
-        presenceStatus[studentId] = 'Hadir';
+        // presenceStatus[studentId] = 'Hadir';
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -210,7 +210,7 @@ class _PresencePageState extends State<PresencePage> {
                   onTap: () {
                     setState(() {
                       // Toggle kehadiran saat item di-tap
-                      presenceStatus[student.id] =
+                      // presenceStatus[student.id] =
                           presenceStatus[student.id] == 'Hadir'
                               ? 'Alpa'
                               : 'Hadir';

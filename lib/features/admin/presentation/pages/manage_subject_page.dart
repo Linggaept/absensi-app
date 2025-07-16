@@ -14,6 +14,7 @@ class ManageSubjectPage extends StatefulWidget {
 class _ManageSubjectPageState extends State<ManageSubjectPage> {
   late Future<List<Subject>> _subjectsFuture;
   final SubjectService _subjectService = SubjectService();
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -37,28 +38,57 @@ class _ManageSubjectPageState extends State<ManageSubjectPage> {
     if (result is Subject) {
       if (!mounted) return;
 
-      if (subject == null) {
-        await _subjectService.addSubject(result);
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            const SnackBar(content: Text('Mata kuliah berhasil ditambahkan')),
-          );
-      } else {
-        await _subjectService.updateSubject(result);
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            const SnackBar(
-              content: Text('Data mata kuliah berhasil diperbarui'),
-            ),
-          );
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        if (subject == null) {
+          // Add new subject
+          await _subjectService.addSubject(result);
+          if (mounted) {
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                const SnackBar(content: Text('Mata kuliah berhasil ditambahkan')),
+              );
+          }
+        } else {
+          // Update existing subject
+          await _subjectService.updateSubject(result);
+          if (mounted) {
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                const SnackBar(
+                  content: Text('Data mata kuliah berhasil diperbarui'),
+                ),
+              );
+          }
+        }
+        _loadSubjects();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text('Terjadi kesalahan: $e'),
+                backgroundColor: AppColors.error,
+              ),
+            );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
-      _loadSubjects();
     }
   }
 
-  void _deleteSubject(String id) async {
+  void _deleteSubject(int id) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -84,13 +114,39 @@ class _ManageSubjectPageState extends State<ManageSubjectPage> {
 
     if (confirmed == true) {
       if (!mounted) return;
-      await _subjectService.deleteSubject(id);
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(content: Text('Mata kuliah berhasil dihapus')),
-        );
-      _loadSubjects();
+
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        await _subjectService.deleteSubject(id);
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              const SnackBar(content: Text('Mata kuliah berhasil dihapus')),
+            );
+        }
+        _loadSubjects();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text('Terjadi kesalahan: $e'),
+                backgroundColor: AppColors.error,
+              ),
+            );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
     }
   }
 
@@ -104,97 +160,130 @@ class _ManageSubjectPageState extends State<ManageSubjectPage> {
           style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
         ),
       ),
-      body: FutureBuilder<List<Subject>>(
-        future: _subjectsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(
-              child: Text(
-                'Tidak ada data mata kuliah.',
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
-            );
-          }
-
-          final subjects = snapshot.data!;
-          return ListView.builder(
-            padding: const EdgeInsets.only(bottom: 80),
-            itemCount: subjects.length,
-            itemBuilder: (context, index) {
-              final subject = subjects[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: ListTile(
-                  leading: const CircleAvatar(
-                    backgroundColor: AppColors.primaryLight,
-                    child: Icon(Icons.book, color: AppColors.primary),
-                  ),
-                  title: Text(
-                    subject.subjectName,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    '${subject.subjectCode} - ${subject.credits} SKS',
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
+      body: Stack(
+        children: [
+          FutureBuilder<List<Subject>>(
+            future: _subjectsFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.edit_outlined,
-                          color: AppColors.textSecondary,
-                        ),
-                        onPressed: () =>
-                            _navigateToAddEditPage(subject: subject),
+                      const Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: AppColors.error,
                       ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.delete_outline,
-                          color: AppColors.error,
-                        ),
-                        onPressed: () => _deleteSubject(subject.id),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Error: ${snapshot.error}',
+                        style: const TextStyle(color: AppColors.error),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loadSubjects,
+                        child: const Text('Coba Lagi'),
                       ),
                     ],
                   ),
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text(subject.subjectName),
-                        content: SingleChildScrollView(
-                          child: ListBody(
-                            children: <Widget>[
-                              Text('ID: ${subject.subjectId}'),
-                              Text('Kode: ${subject.subjectCode}'),
-                              Text('Jurusan: ${subject.major}'),
-                              Text('SKS: ${subject.credits}'),
-                              const SizedBox(height: 10),
-                              Text(
-                                subject.description ?? 'Tidak ada deskripsi.',
-                              ),
-                            ],
+                );
+              }
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(
+                  child: Text(
+                    'Tidak ada data mata kuliah.',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
+                );
+              }
+
+              final subjects = snapshot.data!;
+              return ListView.builder(
+                padding: const EdgeInsets.only(bottom: 80),
+                itemCount: subjects.length,
+                itemBuilder: (context, index) {
+                  final subject = subjects[index];
+                  return Card(
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: ListTile(
+                      leading: const CircleAvatar(
+                        backgroundColor: AppColors.primaryLight,
+                        child: Icon(Icons.book, color: AppColors.primary),
+                      ),
+                      title: Text(
+                        subject.namaMatkul,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        '${subject.kodeMatkul} - ${subject.pertemuan} Pertemuan',
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(
+                              Icons.edit_outlined,
+                              color: AppColors.textSecondary,
+                            ),
+                            onPressed: () =>
+                                _navigateToAddEditPage(subject: subject),
                           ),
-                        ),
-                        actions: <Widget>[
-                          TextButton(
-                            child: const Text('Tutup'),
-                            onPressed: () => Navigator.of(context).pop(),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              color: AppColors.error,
+                            ),
+                            onPressed: () => _deleteSubject(subject.id),
                           ),
                         ],
                       ),
-                    );
-                  },
-                ),
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text(subject.namaMatkul),
+                            content: SingleChildScrollView(
+                              child: ListBody(
+                                children: <Widget>[
+                                  Text('ID: ${subject.id}'),
+                                  Text('Kode: ${subject.kodeMatkul}'),
+                                  Text('Jurusan: ${subject.jurusan}'),
+                                  Text('Pertemuan: ${subject.pertemuan}'),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    subject.deskripsi ?? 'Tidak ada deskripsi.',
+                                  ),
+                                ],
+                              ),
+                            ),
+                            actions: <Widget>[
+                              TextButton(
+                                child: const Text('Tutup'),
+                                onPressed: () => Navigator.of(context).pop(),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
               );
             },
-          );
-        },
+          ),
+          if (_isLoading)
+            Container(
+              color: Colors.black54,
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _navigateToAddEditPage(),

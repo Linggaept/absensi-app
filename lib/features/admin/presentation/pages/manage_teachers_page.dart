@@ -127,7 +127,7 @@ class _ManageTeachersPageState extends State<ManageTeachersPage> {
                   title: Text(teacher.nama_lengkap,
                       style:
                           const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text(teacher.mata_kuliah_id.toString()),
+                  subtitle: Text(teacher.nama_matkul),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

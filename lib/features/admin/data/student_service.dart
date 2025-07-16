@@ -1,51 +1,91 @@
-import 'dart:math';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:absensi/common/models/student_model.dart';
+import 'package:absensi/features/auth/data/simple_token_service.dart';
 
-/// A mock service for managing students.
 class StudentService {
-  // Mock database
-  static final List<Student> _students = [
-    Student(id: '1', nis: '12345', fullName: 'Andi Pratama', email: 'andi.p@siswa.id', className: 'XII IPA 1', phoneNumber: '081111111111', password: 'password123'),
-    Student(id: '2', nis: '12346', fullName: 'Citra Lestari', email: 'citra.l@siswa.id', className: 'XII IPA 2', phoneNumber: '082222222222', password: 'password456'),
-    Student(id: '3', nis: '12347', fullName: 'Doni Setiawan', email: 'doni.s@siswa.id', className: 'XII IPS 1', phoneNumber: '083333333333', password: 'password789'),
-  ];
+  static const String baseUrl = 'http://192.168.1.14:3000/api/siswa';
+  
+  // Helper method to get headers with authorization
+  Map<String, String> _getHeaders() {
+    final Map<String, String> headers = {
+      'Content-Type': 'application/json',
+    };
+    
+    final token = SimpleTokenService.getToken();
+    if (token != null) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+    
+    return headers;
+  }
 
+  // GET - Retrieve all students
   Future<List<Student>> getStudents() async {
-    await Future.delayed(const Duration(seconds: 1));
-    return List.from(_students);
-  }
+    try {
+      final response = await http.get(
+        Uri.parse(baseUrl),
+        headers: _getHeaders(),
+      );
 
-  Future<void> addStudent(Student student) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    final newStudent = Student(
-      id: (Random().nextInt(1000) + 10).toString(),
-      nis: student.nis,
-      fullName: student.fullName,
-      email: student.email,
-      className: student.className,
-      phoneNumber: student.phoneNumber,
-      password: student.password,
-    );
-    _students.add(newStudent);
-  }
-
-  Future<void> updateStudent(Student student) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    final index = _students.indexWhere((s) => s.id == student.id);
-    if (index != -1) {
-      _students[index].nis = student.nis;
-      _students[index].fullName = student.fullName;
-      _students[index].email = student.email;
-      _students[index].className = student.className;
-      _students[index].phoneNumber = student.phoneNumber;
-      if (student.password != null && student.password!.isNotEmpty) {
-        _students[index].password = student.password;
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+        return jsonData.map((json) => Student.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load students: ${response.statusCode}');
       }
+    } catch (e) {
+      throw Exception('Error fetching students: $e');
     }
   }
 
+  // POST - Add new student
+  Future<void> addStudent(Student student) async {
+    try {
+      final response = await http.post(
+        Uri.parse(baseUrl),
+        headers: _getHeaders(),
+        body: json.encode(student.toJson()),
+      );
+
+      if (response.statusCode != 201 && response.statusCode != 200) {
+        throw Exception('Failed to add student: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error adding student: $e');
+    }
+  }
+
+  // PUT - Update existing student
+  Future<void> updateStudent(Student student) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/${student.id}'),
+        headers: _getHeaders(),
+        body: json.encode(student.toJsonForUpdate()),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to update student: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error updating student: $e');
+    }
+  }
+
+  // DELETE - Delete student
   Future<void> deleteStudent(String id) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    _students.removeWhere((s) => s.id == id);
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/$id'),
+        headers: _getHeaders(),
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw Exception('Failed to delete student: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error deleting student: $e');
+    }
   }
 }

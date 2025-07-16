@@ -37,41 +37,71 @@ class _ManageStudentsPageState extends State<ManageStudentsPage> {
     if (result is Student) {
       if (!mounted) return;
 
-      if (student == null) {
-        await _studentService.addStudent(result);
+      try {
+        if (student == null) {
+          await _studentService.addStudent(result);
+          if (!mounted) return;
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(const SnackBar(content: Text('Siswa berhasil ditambahkan')));
+        } else {
+          await _studentService.updateStudent(result);
+          if (!mounted) return;
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(const SnackBar(content: Text('Data siswa berhasil diperbarui')));
+        }
+        _loadStudents();
+      } catch (e) {
+        if (!mounted) return;
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(const SnackBar(content: Text('Siswa berhasil ditambahkan')));
-      } else {
-        await _studentService.updateStudent(result);
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(const SnackBar(content: Text('Data siswa berhasil diperbarui')));
+          ..showSnackBar(SnackBar(
+            content: Text('Terjadi kesalahan: ${e.toString()}'),
+            backgroundColor: AppColors.error,
+          ));
       }
-      _loadStudents();
     }
   }
 
-  void _deleteStudent(String id) async {
+  void _deleteStudent(int id) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Hapus Siswa'),
         content: const Text('Apakah Anda yakin ingin menghapus data siswa ini?'),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Batal')),
-          TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Hapus', style: TextStyle(color: AppColors.error))),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false), 
+            child: const Text('Batal')
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true), 
+            child: const Text('Hapus', style: TextStyle(color: AppColors.error))
+          ),
         ],
       ),
     );
 
     if (confirmed == true) {
       if (!mounted) return;
-      await _studentService.deleteStudent(id);
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(const SnackBar(content: Text('Siswa berhasil dihapus')));
-      _loadStudents();
+      
+      try {
+        await _studentService.deleteStudent(id.toString());
+        if (!mounted) return;
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(const SnackBar(content: Text('Siswa berhasil dihapus')));
+        _loadStudents();
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(
+            content: Text('Terjadi kesalahan: ${e.toString()}'),
+            backgroundColor: AppColors.error,
+          ));
+      }
     }
   }
 
@@ -90,7 +120,25 @@ class _ManageStudentsPageState extends State<ManageStudentsPage> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 64, color: AppColors.error),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error: ${snapshot.error}',
+                    style: const TextStyle(color: AppColors.error),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _loadStudents,
+                    child: const Text('Coba Lagi'),
+                  ),
+                ],
+              ),
+            );
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(
@@ -111,9 +159,8 @@ class _ManageStudentsPageState extends State<ManageStudentsPage> {
                     child: Icon(Icons.person_outline, color: AppColors.primary),
                   ),
                   title: Text(student.fullName,
-                      style:
-                          const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text('NIS: ${student.nis} | Kelas: ${student.className}'),
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text('NIS: ${student.nis} | Kelas ID: ${student.kelasId}'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
