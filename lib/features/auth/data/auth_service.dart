@@ -1,29 +1,51 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:absensi/common/constants/api_constants.dart';
-import 'package:absensi/common/models/user_model.dart';
 
 class AuthService {
-  Future<User> login(String username, String password) async {
-    final response = await http.post(
-      Uri.parse(ApiConstants.loginUrl),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'username': username,
-        'password': password,
-      }),
-    );
+  static const String baseUrl = 'http://192.168.1.14:3000/api';
+  
+  Future<AuthResponse> login(String nipNis, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/login'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, String>{
+          'nip_nis': nipNis,
+          'password': password,
+        }),
+      );
 
-    if (response.statusCode == 200) {
-      // Jika server mengembalikan response 200 OK, parse JSON.
-      // Asumsi API Anda mengembalikan: { "status": "success", "data": { ...user... } }
       final responseBody = jsonDecode(response.body);
-      return User.fromJson(responseBody['data']);
-    } else {
-      // Jika gagal, lempar exception dengan pesan dari API.
-      throw Exception(jsonDecode(response.body)['message'] ?? 'Gagal untuk login.');
+
+      if (response.statusCode == 200) {
+        return AuthResponse.fromJson(responseBody);
+      } else {
+        throw Exception(responseBody['message'] ?? 'Gagal untuk login.');
+      }
+    } catch (e) {
+      throw Exception('Terjadi kesalahan: $e');
     }
+  }
+}
+
+class AuthResponse {
+  final String message;
+  final String token;
+  final String role;
+
+  AuthResponse({
+    required this.message,
+    required this.token,
+    required this.role,
+  });
+
+  factory AuthResponse.fromJson(Map<String, dynamic> json) {
+    return AuthResponse(
+      message: json['message'],
+      token: json['token'],
+      role: json['role'],
+    );
   }
 }

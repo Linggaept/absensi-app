@@ -1,74 +1,97 @@
-import 'dart:math';
-import 'package:absensi/common/models/teacher_model.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
-/// A mock service for managing teachers.
-/// This class simulates network latency and CRUD operations.
-/// In a real application, this would be replaced with actual API calls using `http` or `dio`.
+import 'package:absensi/common/constants/api_constants.dart';
+import 'package:absensi/common/models/teacher_model.dart'; // Import model Teacher
+import 'package:absensi/features/auth/data/simple_token_service.dart'; // Import SimpleTokenService
+
 class TeacherService {
-  // Mock database
-  static final List<Teacher> _teachers = [
-    Teacher(
-        id: '1',
-        nip: '198001012005011001',
-        fullName: 'Budi Santoso',
-        email: 'budi.s@sekolah.id',
-        subject: 'Matematika',
-        phoneNumber: '081234567890',
-        password: 'password123'),
-    Teacher(
-        id: '2',
-        nip: '198202022006022002',
-        fullName: 'Siti Aminah',
-        email: 'siti.a@sekolah.id',
-        subject: 'Bahasa Indonesia',
-        phoneNumber: '081234567891',
-        password: 'password456'),
-    Teacher(
-        id: '3',
-        nip: '198503032008031003',
-        fullName: 'Agus Wijaya',
-        email: 'agus.w@sekolah.id',
-        subject: 'Fisika',
-        phoneNumber: '081234567892',
-        password: 'password789'),
-  ];
-
   Future<List<Teacher>> getTeachers() async {
-    await Future.delayed(const Duration(seconds: 1));
-    return List.from(_teachers);
-  }
+    final token = SimpleTokenService.getToken();
+    if (token == null) {
+      throw Exception('Token tidak ditemukan, silakan login kembali.');
+    }
 
-  Future<void> addTeacher(Teacher teacher) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    final newTeacher = Teacher(
-      id: (Random().nextInt(1000) + 10).toString(), // simple random id
-      fullName: teacher.fullName,
-      nip: teacher.nip,
-      email: teacher.email,
-      subject: teacher.subject,
-      phoneNumber: teacher.phoneNumber,
-      password: teacher.password,
+    final response = await http.get(
+      Uri.parse('${ApiConstants.baseUrl}/guru'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
     );
-    _teachers.add(newTeacher);
-  }
 
-  Future<void> updateTeacher(Teacher teacher) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    final index = _teachers.indexWhere((t) => t.id == teacher.id);
-    if (index != -1) {
-      _teachers[index].fullName = teacher.fullName;
-      _teachers[index].nip = teacher.nip;
-      _teachers[index].email = teacher.email;
-      _teachers[index].subject = teacher.subject;
-      _teachers[index].phoneNumber = teacher.phoneNumber;
-      if (teacher.password != null && teacher.password!.isNotEmpty) {
-        _teachers[index].password = teacher.password;
-      }
+    if (response.statusCode == 200) {
+      final List<dynamic> teachersJson = jsonDecode(response.body);
+      return teachersJson.map((json) => Teacher.fromJson(json)).toList();
+    } else {
+      throw Exception(
+          'Gagal memuat data guru: ${response.statusCode} ${response.body}');
     }
   }
 
-  Future<void> deleteTeacher(String id) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    _teachers.removeWhere((t) => t.id == id);
-  }
+  // Metode untuk menambahkan guru baru
+    Future<void> addTeacher(Teacher teacher) async {
+      final token = SimpleTokenService.getToken();
+      if (token == null) {
+       throw Exception('Token tidak ditemukan, silakan login kembali.');
+      }
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}/guru'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+       },
+       body: jsonEncode(teacher.toJson()),
+      );
+
+      if (response.statusCode == 200) {
+        // Berhasil menambahkan guru, tidak perlu mengembalikan apa pun
+        return;
+      } else {
+        // Gagal menambahkan guru, lempar exception dengan pesan error
+        throw Exception(
+            'Gagal menambahkan guru: ${response.statusCode} - ${response.body}');
+      }
+    }
+
+    // Tambahkan metode updateTeacher
+    Future<void> updateTeacher(Teacher teacher) async {
+      final token = SimpleTokenService.getToken();
+      if (token == null) {
+        throw Exception('Token tidak ditemukan, silakan login kembali.');
+      }
+      final response = await http.put(
+        Uri.parse('${ApiConstants.baseUrl}/guru/${teacher.id}'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(teacher.toJson()),
+      );
+      // Cek apakah response berhasil
+      if (response.statusCode == 200) {
+        // Berhasil memperbarui guru, tidak perlu mengembalikan apa pun
+        return;
+      } else {
+        throw Exception(
+           'Gagal memperbarui guru: ${response.statusCode} ${response.body}');
+      }
+    }
+
+    // Metode untuk menghapus guru
+    Future<void> deleteTeacher(String id) async {
+      final token = SimpleTokenService.getToken();
+      if (token == null) {
+       throw Exception('Token tidak ditemukan, silakan login kembali.');
+      }
+      final response = await http.delete(
+        Uri.parse('${ApiConstants.baseUrl}/guru/$id'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode != 200) {
+       throw Exception(
+            'Gagal menghapus guru: ${response.statusCode} ${response.body}');
+      }
+    }
 }

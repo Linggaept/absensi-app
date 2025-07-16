@@ -24,6 +24,7 @@ class _ManageTeachersPageState extends State<ManageTeachersPage> {
   void _loadTeachers() {
     setState(() {
       _teachersFuture = _teacherService.getTeachers();
+      if (!mounted) return;
     });
   }
 
@@ -78,7 +79,7 @@ class _ManageTeachersPageState extends State<ManageTeachersPage> {
 
     if (confirmed == true) {
       if (!mounted) return;
-      await _teacherService.deleteTeacher(id);
+      await _teacherService.deleteTeacher(int.parse(id) as String);
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
@@ -123,10 +124,10 @@ class _ManageTeachersPageState extends State<ManageTeachersPage> {
                     backgroundColor: AppColors.primaryLight,
                     child: Icon(Icons.person, color: AppColors.primary),
                   ),
-                  title: Text(teacher.fullName,
+                  title: Text(teacher.nama_lengkap,
                       style:
                           const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text(teacher.subject),
+                  subtitle: Text(teacher.mata_kuliah_id.toString()),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -139,7 +140,7 @@ class _ManageTeachersPageState extends State<ManageTeachersPage> {
                       IconButton(
                         icon: const Icon(Icons.delete_outline,
                             color: AppColors.error),
-                        onPressed: () => _deleteTeacher(teacher.id),
+                        onPressed: () => _deleteTeacher(teacher.id.toString()),
                       ),
                     ],
                   ),

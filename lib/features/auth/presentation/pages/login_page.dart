@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:absensi/common/constants/app_colors.dart';
 import 'package:absensi/common/constants/app_text_styles.dart';
 import 'package:absensi/features/auth/data/auth_service.dart';
+import 'package:absensi/features/auth/data/simple_token_service.dart';
 import 'package:absensi/features/admin/presentation/pages/admin_dashboard_page.dart';
 import 'package:absensi/features/teacher/presentation/pages/teacher_dashboard_page.dart';
 import 'package:absensi/features/student/presentation/pages/student_dashboard_page.dart';
@@ -15,14 +16,14 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController();
+  final _nipNisController = TextEditingController();
   final _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
   bool _isLoading = false;
 
   @override
   void dispose() {
-    _usernameController.dispose();
+    _nipNisController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -36,51 +37,51 @@ class _LoginPageState extends State<LoginPage> {
       _isLoading = true;
     });
 
-    // --- Logika Sementara ---
-    // Simulasi network delay
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      final authResponse = await _authService.login(
+        _nipNisController.text,
+        _passwordController.text,
+      );
 
-    final username = _usernameController.text;
-    final password = _passwordController.text;
+      if (mounted) {
+        // Simpan token dan role untuk session management
+        SimpleTokenService.saveToken(authResponse.token, authResponse.role);
+        
+        // Redirect berdasarkan role
+        Widget targetPage;
+        switch (authResponse.role) {
+          case 'admin':
+            targetPage = const AdminDashboardPage();
+            break;
+          case 'guru':
+            targetPage = const TeacherDashboardPage();
+            break;
+          case 'siswa':
+            targetPage = const StudentDashboardPage();
+            break;
+          default:
+            throw Exception('Role tidak dikenal: ${authResponse.role}');
+        }
 
-    if (username == 'admin' && password == 'admin') {
-      if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const AdminDashboardPage()),
+          MaterialPageRoute(builder: (_) => targetPage),
         );
       }
-      // Tidak perlu set _isLoading = false karena halaman sudah diganti
-      return;
-    } else if (username == 'guru' && password == 'guru') {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const TeacherDashboardPage()),
-        );
-      }
-      return;
-    } else if (username == 'siswa' && password == 'siswa') {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const StudentDashboardPage()),
-        );
-      }
-      return;
-    } else {
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Username atau password salah.'),
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
             backgroundColor: AppColors.error,
           ),
         );
       }
-    }
-    // --- Akhir Logika Sementara ---
-
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -121,13 +122,13 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 48),
                       TextFormField(
-                        key: const ValueKey('username_field'),
-                        controller: _usernameController,
+                        key: const ValueKey('nip_nis_field'),
+                        controller: _nipNisController,
                         decoration: const InputDecoration(
                           hintText: 'NIP/NIS',
                         ),
                         validator: (value) => (value?.isEmpty ?? true)
-                            ? 'Username tidak boleh kosong'
+                            ? 'NIP/NIS tidak boleh kosong'
                             : null,
                       ),
                       const SizedBox(height: 16),
@@ -146,7 +147,18 @@ class _LoginPageState extends State<LoginPage> {
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
-                        child: const Text('Login'),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                            : const Text('Login'),
                       ),
                     ],
                   ),
