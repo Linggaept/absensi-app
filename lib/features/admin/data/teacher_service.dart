@@ -43,7 +43,7 @@ class TeacherService {
        body: jsonEncode(teacher.toJson()),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         // Berhasil menambahkan guru, tidak perlu mengembalikan apa pun
         return;
       } else {
@@ -89,6 +89,7 @@ class TeacherService {
           'Authorization': 'Bearer $token',
         },
       );
+
       if (response.statusCode != 200) {
        throw Exception(
             'Gagal menghapus guru: ${response.statusCode} ${response.body}');

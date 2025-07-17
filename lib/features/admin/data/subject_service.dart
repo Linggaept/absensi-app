@@ -45,7 +45,9 @@ class SubjectService {
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         final jsonData = json.decode(response.body);
-        return Subject.fromJson(jsonData);
+        // The actual subject data might be nested, e.g., under a 'matkul' key.
+        final subjectJson = (jsonData is Map<String, dynamic> && jsonData.containsKey('matkul')) ? jsonData['matkul'] : jsonData;
+        return Subject.fromJson(subjectJson);
       } else {
         throw Exception('Failed to add subject: ${response.statusCode}');
       }
@@ -65,7 +67,9 @@ class SubjectService {
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
-        return Subject.fromJson(jsonData);
+        // The actual subject data might be nested, e.g., under a 'matkul' key.
+        final subjectJson = (jsonData is Map<String, dynamic> && jsonData.containsKey('matkul')) ? jsonData['matkul'] : jsonData;
+        return Subject.fromJson(subjectJson);
       } else {
         throw Exception('Failed to update subject: ${response.statusCode}');
       }

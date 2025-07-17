@@ -87,6 +87,17 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Jika sudah login, arahkan ke halaman dashboard sesuai role
+    if (SimpleTokenService.isLoggedIn()) {
+      final role = SimpleTokenService.getRole();
+      if (role == 'admin') {
+        return const AdminDashboardPage();
+      } else if (role == 'guru') {
+        return const TeacherDashboardPage();
+      } else if (role == 'siswa') {
+        return const StudentDashboardPage();
+      }
+    }
     return Scaffold(
       body: Stack(
         children: [

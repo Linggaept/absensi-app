@@ -1,4 +1,5 @@
 import 'package:absensi/common/constants/app_colors.dart';
+import 'package:absensi/features/auth/data/simple_token_service.dart';
 import 'package:absensi/features/auth/presentation/pages/login_page.dart';
 import 'package:absensi/features/student/presentation/tabs/student_class_tab.dart';
 import 'package:absensi/features/student/presentation/tabs/student_recap_tab.dart';
@@ -27,6 +28,12 @@ class _StudentDashboardPageState extends State<StudentDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Cek apakah token sudah ada
+    if (!SimpleTokenService.isLoggedIn()) {
+      // Jika tidak ada token, arahkan ke halaman login
+      return const LoginPage();
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primary,
@@ -35,6 +42,8 @@ class _StudentDashboardPageState extends State<StudentDashboardPage> {
           IconButton(
             icon: const Icon(Icons.logout, color: AppColors.white),
             onPressed: () {
+              // Hapus token dan role saat logout
+              SimpleTokenService.clearToken();
               Navigator.of(context).pushReplacement(
                   MaterialPageRoute(builder: (_) => const LoginPage()));
             },

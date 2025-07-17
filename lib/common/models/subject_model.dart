@@ -18,11 +18,11 @@ class Subject {
   // Convert from JSON
   factory Subject.fromJson(Map<String, dynamic> json) {
     return Subject(
-      id: json['id'],
-      namaMatkul: json['nama_matkul'],
-      kodeMatkul: json['kode_matkul'],
-      jurusan: json['jurusan'],
-      pertemuan: json['pertemuan'],
+      id: json['id'] ?? 0,
+      namaMatkul: json['nama_matkul'] ?? '',
+      kodeMatkul: json['kode_matkul'] ?? '',
+      jurusan: json['jurusan'] ?? '',
+      pertemuan: json['pertemuan'] ?? 0,
       deskripsi: json['deskripsi'],
     );
   }
@@ -30,6 +30,7 @@ class Subject {
   // Convert to JSON
   Map<String, dynamic> toJson() {
     return {
+      'id': id == 0 ? null : id, // Allow id to be null for new subjects
       'nama_matkul': namaMatkul,
       'kode_matkul': kodeMatkul,
       'jurusan': jurusan,

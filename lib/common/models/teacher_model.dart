@@ -4,6 +4,7 @@ class Teacher {
   final String nip;
   final String email;
   final String nama_matkul;
+  final String mata_kuliah_id; // Assuming this is the ID of the subject
   final String nomor_handphone;
   final String? password;
 
@@ -14,6 +15,7 @@ class Teacher {
     required this.email,
     required this.nama_matkul,
     required this.nomor_handphone,
+    this.mata_kuliah_id = '', // Default to empty string if not provided
     this.password, // Dibuat opsional
   });
 
@@ -26,6 +28,7 @@ class Teacher {
       nama_matkul: json['nama_matkul'] ?? '',
       nomor_handphone: json['nomor_handphone'] ?? '',
       password: json['password'], // Password can be null
+      mata_kuliah_id: json['mata_kuliah_id'] ?? '', // Assuming this is the ID of the subject
     );
   }
 
@@ -37,7 +40,8 @@ class Teacher {
       "email": email,
       "nama_matkul": nama_matkul,
       "nomor_handphone": nomor_handphone,
-     "password": password,
+      "password": password,
+      "mata_kuliah_id": mata_kuliah_id, // Include subject ID
     };
   }
 }

@@ -24,7 +24,6 @@ class _ManageTeachersPageState extends State<ManageTeachersPage> {
   void _loadTeachers() {
     setState(() {
       _teachersFuture = _teacherService.getTeachers();
-      if (!mounted) return;
     });
   }
 
@@ -58,6 +57,7 @@ class _ManageTeachersPageState extends State<ManageTeachersPage> {
     }
   }
 
+  // Metode untuk menghapus guru - FIXED
   void _deleteTeacher(String id) async {
     // Show confirmation dialog
     final confirmed = await showDialog<bool>(
@@ -67,24 +67,38 @@ class _ManageTeachersPageState extends State<ManageTeachersPage> {
         content: const Text('Apakah Anda yakin ingin menghapus data guru ini?'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Batal')),
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Batal'),
+          ),
           TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Hapus',
-                  style: TextStyle(color: AppColors.error))),
+            onPressed: () => Navigator.of(context).pop(true), // FIX: Return true instead of calling _deleteTeacher again
+            child: const Text('Hapus',
+                style: TextStyle(color: AppColors.error)),
+          ),
         ],
       ),
     );
 
     if (confirmed == true) {
       if (!mounted) return;
-      await _teacherService.deleteTeacher(int.parse(id) as String);
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-            const SnackBar(content: Text('Guru berhasil dihapus')));
-      _loadTeachers();
+      
+      try {
+        await _teacherService.deleteTeacher(id);
+        if (!mounted) return;
+        
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+              const SnackBar(content: Text('Guru berhasil dihapus')));
+        _loadTeachers();
+      } catch (e) {
+        if (!mounted) return;
+        
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+              SnackBar(content: Text('Gagal menghapus guru: $e')));
+      }
     }
   }
 
@@ -95,7 +109,6 @@ class _ManageTeachersPageState extends State<ManageTeachersPage> {
         backgroundColor: AppColors.primary,
         title: const Text('Kelola Guru',
             style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold)),
-        
       ),
       body: FutureBuilder<List<Teacher>>(
         future: _teachersFuture,
@@ -125,8 +138,7 @@ class _ManageTeachersPageState extends State<ManageTeachersPage> {
                     child: Icon(Icons.person, color: AppColors.primary),
                   ),
                   title: Text(teacher.nama_lengkap,
-                      style:
-                          const TextStyle(fontWeight: FontWeight.bold)),
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: Text(teacher.nama_matkul),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,

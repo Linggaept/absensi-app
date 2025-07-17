@@ -41,6 +41,7 @@ class ClassModel {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'nama_kelas': nama_kelas,
       'guru_id': guru_id,
       'waktu_mulai': waktu_mulai,
