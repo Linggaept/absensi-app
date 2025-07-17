@@ -1,6 +1,7 @@
 import 'package:absensi/common/constants/app_colors.dart';
 import 'package:absensi/common/models/class_model.dart';
 import 'package:flutter/material.dart';
+import 'package:absensi/features/student/services/student_presence_service.dart';
 
 class StudentPresencePage extends StatefulWidget {
   final ClassModel classModel;
@@ -12,25 +13,41 @@ class StudentPresencePage extends StatefulWidget {
 
 class _StudentPresencePageState extends State<StudentPresencePage> {
   final TextEditingController _codeController = TextEditingController();
+  bool _isLoading = false;
 
-  void _submitPresence() {
+  Future<void> _submitPresence() async {
     final code = _codeController.text;
-    if (code.isNotEmpty) {
-      // TODO: Validate presence code logic
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Berhasil melakukan presensi untuk kode: $code'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Navigator.of(context).pop();
-    } else {
+    if (code.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Kode presensi tidak boleh kosong.'),
           backgroundColor: Colors.red,
         ),
       );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final result = await StudentPresenceService.submitPresence(
+        kelasId: widget.classModel.id,
+        kodePresensi: code,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result.message), backgroundColor: Colors.green),
+        );
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -62,12 +79,17 @@ class _StudentPresencePageState extends State<StudentPresencePage> {
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: 8),
               decoration: const InputDecoration(labelText: 'Kode Presensi', border: OutlineInputBorder()),
+              onFieldSubmitted: (_) => _submitPresence(),
             ),
             const SizedBox(height: 24.0),
             ElevatedButton(
-              onPressed: _submitPresence,
+              onPressed: _isLoading ? null : _submitPresence,
               style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
-              child: const Text('Lakukan Presensi'),
+              child: _isLoading
+                  ? const CircularProgressIndicator(
+                      color: Colors.white,
+                    )
+                  : const Text('Lakukan Presensi'),
             ),
           ],
         ),

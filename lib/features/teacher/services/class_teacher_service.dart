@@ -5,7 +5,7 @@ import 'package:absensi/features/auth/data/simple_token_service.dart';
 import 'package:absensi/features/teacher/models/class_teacher_model.dart';
 
 class ClassTeacherService {
-  static const String baseUrl = 'http://192.168.1.14:3000/api';
+  static const String baseUrl = 'http://10.5.48.67:3000/api';
   
   // Method untuk mendapatkan daftar kelas berdasarkan guru_id
   static Future<List<ClassTeacherModel>> getClassesByTeacherId(int guruId) async {

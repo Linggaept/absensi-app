@@ -4,7 +4,7 @@ import 'package:absensi/features/teacher/models/recap_model.dart';
 import 'package:absensi/features/auth/data/simple_token_service.dart';
 
 class RecapService {
-  static const String baseUrl = 'http://192.168.1.14:3000/api';
+  static const String baseUrl = 'http://10.5.48.67:3000/api';
   
   static Future<List<RecapModel>> fetchRecaps() async {
     try {

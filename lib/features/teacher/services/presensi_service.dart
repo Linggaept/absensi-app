@@ -6,7 +6,7 @@ import 'package:absensi/features/auth/data/simple_token_service.dart';
 import 'package:absensi/features/teacher/models/presensi_model.dart';
 
 class PresensiService {
-  static const String baseUrl = 'http://192.168.1.14:3000';
+  static const String baseUrl = 'http://10.5.48.67:3000';
 
   static Map<String, String> _getHeaders() {
     final token = SimpleTokenService.getToken();

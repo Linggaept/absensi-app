@@ -1,53 +1,52 @@
 import 'package:absensi/common/constants/app_colors.dart';
 import 'package:absensi/features/student/models/student_recap_model.dart';
+import 'package:absensi/features/student/services/student_recap_service.dart';
 import 'package:flutter/material.dart';
 
-class StudentRecapTab extends StatelessWidget {
+class StudentRecapTab extends StatefulWidget {
   const StudentRecapTab({super.key});
 
-  // Data dummy untuk rekapitulasi siswa
-  final List<StudentRecapModel> dummyRecaps = const [
-    StudentRecapModel(
-      id: 'sr1',
-      className: 'Kelas 10A',
-      subjectName: 'Matematika',
-      teacherName: 'Budi Santoso',
-      date: '13-07-2025',
-      startTime: '07:00',
-      endTime: '08:30',
-      presenceCount: 1,
-    ),
-    StudentRecapModel(
-      id: 'sr2',
-      className: 'Kelas 11B',
-      subjectName: 'Fisika',
-      teacherName: 'Siti Aminah',
-      date: '13-07-2025',
-      startTime: '09:00',
-      endTime: '10:30',
-      presenceCount: 1,
-    ),
-    StudentRecapModel(
-      id: 'sr3',
-      className: 'Kelas 10A',
-      subjectName: 'Matematika',
-      teacherName: 'Budi Santoso',
-      date: '12-07-2025',
-      startTime: '07:00',
-      endTime: '08:30',
-      presenceCount: 0,
-    ),
-    StudentRecapModel(
-      id: 'sr4',
-      className: 'Kelas 11B',
-      subjectName: 'Fisika',
-      teacherName: 'Siti Aminah',
-      date: '11-07-2025',
-      startTime: '09:00',
-      endTime: '10:30',
-      presenceCount: 0,
-    ),
-  ];
+  @override
+  State<StudentRecapTab> createState() => _StudentRecapTabState();
+}
+
+class _StudentRecapTabState extends State<StudentRecapTab> {
+  List<StudentRecapModel> recaps = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRecaps();
+  }
+
+  Future<void> _loadRecaps() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+      
+      final loadedRecaps = await StudentRecapService.getRecap();
+      
+      setState(() {
+        recaps = loadedRecaps;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        // Jika error, gunakan data dummy atau kosong
+        recaps = [];
+      });
+      
+      // Tampilkan error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat data: ${e.toString()}')),
+        );
+      }
+    }
+  }
 
   Color _getStatusColor(int presenceCount) {
     if (presenceCount > 0) {
@@ -56,14 +55,20 @@ class StudentRecapTab extends StatelessWidget {
       return Colors.red;
     }
   }
-      
+
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
     return ListView.builder(
       padding: const EdgeInsets.all(16.0),
-      itemCount: dummyRecaps.length,
+      itemCount: recaps.length,
       itemBuilder: (context, index) {
-        final recap = dummyRecaps[index];
+        final recap = recaps[index];
         return Card(
           margin: const EdgeInsets.only(bottom: 12.0),
           child: ListTile(
@@ -77,7 +82,10 @@ class StudentRecapTab extends StatelessWidget {
                 Text('Waktu: ${recap.date}, ${recap.startTime} - ${recap.endTime}'),
               ],
             ),
-            trailing: Chip(label: Text(recap.presenceCount.toString(), style: const TextStyle(color: AppColors.white)), backgroundColor: _getStatusColor(recap.presenceCount)),
+            trailing: Chip(
+              label: Text(recap.presenceCount.toString(), style: const TextStyle(color: AppColors.white)), 
+              backgroundColor: _getStatusColor(recap.presenceCount)
+            ),
           ),
         );
       },

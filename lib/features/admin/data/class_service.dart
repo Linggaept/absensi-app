@@ -4,7 +4,7 @@ import 'package:absensi/common/models/class_model.dart';
 import 'package:absensi/features/auth/data/simple_token_service.dart';
 
 class ClassService {
-  static const String baseUrl = 'http://192.168.1.14:3000/api';
+  static const String baseUrl = 'http://10.5.48.67:3000/api';
 
   Future<List<ClassModel>> getClasses() async {
     final token = SimpleTokenService.getToken();

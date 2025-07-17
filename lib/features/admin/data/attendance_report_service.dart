@@ -4,7 +4,7 @@ import 'package:absensi/features/admin/models/attendance_report_model.dart';
 import 'package:absensi/features/auth/data/simple_token_service.dart';
 
 class AttendanceReportService {
-  static const String baseUrl = 'http://192.168.1.14:3000/api/laporan';
+  static const String baseUrl = 'http://10.5.48.67:3000/api/laporan';
 
   // Method untuk mengambil semua laporan absensi
   static Future<List<AttendanceReportModel>> getAllReports() async {

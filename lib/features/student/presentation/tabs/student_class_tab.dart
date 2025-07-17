@@ -1,68 +1,186 @@
+// presentation/pages/student_class_tab.dart
 import 'package:absensi/common/models/class_model.dart';
 import 'package:absensi/features/student/presentation/pages/student_presence_page.dart';
 import 'package:flutter/material.dart';
+import 'package:absensi/features/student/services/student_class_service.dart';
+import 'package:absensi/features/student/models/student_class_model.dart';
 
-class StudentClassTab extends StatelessWidget {
-  StudentClassTab({super.key});
+class StudentClassTab extends StatefulWidget {
+  const StudentClassTab({super.key});
 
-  // Data dummy untuk daftar kelas
-  final List<ClassModel> dummyClasses = [
-    // ClassModel(
-    //   id: '1',
-    //   classId: 'C10A',
-    //   className: 'Kelas 10A',
-    //   teacherName: 'Budi Santoso',
-    //   subjectName: 'Matematika',
-    //   startTime: '07:00',
-    //   endTime: '08:30',
-    //   room: 'R-101',
-    //   studentCount: 30,
-    // ),
-    // ClassModel(
-    //   id: '2',
-    //   classId: 'C11B',
-    //   className: 'Kelas 11B',
-    //   teacherName: 'Siti Aminah',
-    //   subjectName: 'Fisika',
-    //   startTime: '09:00',
-    //   endTime: '10:30',
-    //   room: 'R-202',
-    //   studentCount: 32,
-    // ),
-  ];
+  @override
+  State<StudentClassTab> createState() => _StudentClassTabState();
+}
+
+class _StudentClassTabState extends State<StudentClassTab> {
+  List<StudentClassModel> classes = [];
+  bool isLoading = true;
+  String? errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadClasses();
+  }
+
+  Future<void> _loadClasses() async {
+    try {
+      setState(() {
+        isLoading = true;
+        errorMessage = null;
+      });
+
+      final fetchedClasses = await StudentClassService.getStudentClasses();
+      
+      setState(() {
+        classes = fetchedClasses;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = e.toString();
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _refreshClasses() async {
+    await _loadClasses();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
+    return RefreshIndicator(
+      onRefresh: _refreshClasses,
+      child: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          Text(
+            'Jadwal Kelas Hari Ini',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 16.0),
+          
+          if (isLoading)
+            const Center(
+              child: CircularProgressIndicator(),
+            )
+          else if (errorMessage != null)
+            _buildErrorWidget()
+          else if (classes.isEmpty)
+            _buildEmptyWidget()
+          else
+            _buildClassList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget() {
+    return Container(
       padding: const EdgeInsets.all(16.0),
-      children: [
-        Text(
-          'Jadwal Kelas Hari Ini',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 16.0),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: dummyClasses.length,
-          itemBuilder: (context, index) {
-            final aClass = dummyClasses[index];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12.0),
-              child: ListTile(
-                title: Text('${aClass.className} - ${aClass.subjectName}'),
-                subtitle: Text(
-                    '${aClass.teacherName} | ${aClass.startTime} - ${aClass.endTime}'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => StudentPresencePage(classModel: aClass)));
-                },
-              ),
-            );
-          },
-        ),
-      ],
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 64,
+            color: Colors.red[300],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Terjadi Kesalahan',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            errorMessage ?? 'Tidak dapat memuat data kelas',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _loadClasses,
+            child: const Text('Coba Lagi'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyWidget() {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.school_outlined,
+            size: 64,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Tidak Ada Kelas Hari Ini',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Jadwal kelas kosong untuk hari ini',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClassList() {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: classes.length,
+      itemBuilder: (context, index) {
+        final studentClass = classes[index];
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12.0),
+          elevation: 2,
+          child: ListTile(
+            title: Text(
+              studentClass.namaKelas,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Guru: ${studentClass.namaGuru}'),
+                Text('Waktu: ${studentClass.waktuMulai.substring(0, 5)} - ${studentClass.waktuSelesai.substring(0, 5)}'),
+                Text('Ruangan: ${studentClass.ruangan}'),
+                Text('Jumlah Siswa: ${studentClass.jumlahSiswa}'),
+              ],
+            ),
+            trailing: const Icon(Icons.arrow_forward_ios),
+            onTap: () {
+              // Konversi StudentClassModel ke ClassModel untuk StudentPresencePage
+              final classModel = ClassModel(
+                id: studentClass.id,
+                nama_kelas: studentClass.namaKelas,
+                guru_id: studentClass.guruId,
+                waktu_mulai: studentClass.waktuMulai,
+                waktu_selesai: studentClass.waktuSelesai,
+                ruangan: studentClass.ruangan,
+                jumlah_siswa: studentClass.jumlahSiswa,
+              );
+              
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => StudentPresencePage(classModel: classModel),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

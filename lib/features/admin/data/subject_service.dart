@@ -4,7 +4,7 @@ import 'package:absensi/common/models/subject_model.dart';
 import 'package:absensi/features/auth/data/simple_token_service.dart';
 
 class SubjectService {
-  static const String baseUrl = 'http://192.168.1.14:3000/api/matkul';
+  static const String baseUrl = 'http://10.5.48.67:3000/api/matkul';
 
   // Get headers with authorization
   Map<String, String> _getHeaders() {
