@@ -34,11 +34,13 @@ class AuthResponse {
   final String message;
   final String token;
   final String role;
+  final int id;
 
   AuthResponse({
     required this.message,
     required this.token,
     required this.role,
+    required this.id,
   });
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
@@ -46,6 +48,7 @@ class AuthResponse {
       message: json['message'],
       token: json['token'],
       role: json['role'],
+      id: json['id'] ?? 0,
     );
   }
 }

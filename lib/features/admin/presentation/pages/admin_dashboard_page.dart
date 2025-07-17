@@ -7,6 +7,8 @@ import 'package:absensi/features/admin/presentation/pages/manage_class_page.dart
 import 'package:absensi/features/admin/presentation/pages/manage_subject_page.dart';
 import 'package:absensi/features/auth/presentation/pages/login_page.dart';
 import 'package:absensi/features/admin/presentation/pages/attendance_report_page.dart';
+import 'package:absensi/features/auth/data/simple_token_service.dart';
+
 
 class AdminDashboardPage extends StatelessWidget {
   const AdminDashboardPage({super.key});
@@ -28,6 +30,7 @@ class AdminDashboardPage extends StatelessWidget {
             icon: const Icon(Icons.logout, color: Colors.white),
             tooltip: 'Logout',
             onPressed: () {
+              SimpleTokenService.clearToken();
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (context) => const LoginPage()),
                 (route) => false,

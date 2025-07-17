@@ -1,16 +1,23 @@
 class SimpleTokenService {
   static String? _token;
   static String? _role;
+  static int? _id;
 
   // Simpan token dan role
-  static void saveToken(String token, String role) {
+  static void saveToken(String token, String role, int id) {
     _token = token;
     _role = role;
+    _id = id;
   }
 
   // Ambil token
   static String? getToken() {
     return _token;
+  }
+
+  // Ambil ID pengguna
+  static int? getUserId() {
+    return _id;
   }
 
   // Ambil role
@@ -22,6 +29,7 @@ class SimpleTokenService {
   static void clearToken() {
     _token = null;
     _role = null;
+    _id = null;
   }
 
   // Cek apakah user sudah login

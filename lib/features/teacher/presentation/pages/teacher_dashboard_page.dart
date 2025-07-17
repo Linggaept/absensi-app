@@ -3,6 +3,7 @@ import 'package:absensi/features/auth/presentation/pages/login_page.dart';
 import 'package:absensi/features/teacher/presentation/tabs/class_tab.dart';
 import 'package:absensi/features/teacher/presentation/tabs/recap_tab.dart';
 import 'package:flutter/material.dart';
+import 'package:absensi/features/auth/data/simple_token_service.dart';
 
 class TeacherDashboardPage extends StatefulWidget {
   const TeacherDashboardPage({super.key});
@@ -38,6 +39,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
           IconButton(
             icon: const Icon(Icons.logout, color: AppColors.white),
             onPressed: () {
+              SimpleTokenService.clearToken();
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(builder: (_) => const LoginPage()),
               );

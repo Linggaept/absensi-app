@@ -45,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
 
       if (mounted) {
         // Simpan token dan role untuk session management
-        SimpleTokenService.saveToken(authResponse.token, authResponse.role);
+        SimpleTokenService.saveToken(authResponse.token, authResponse.role, authResponse.id);
         
         // Redirect berdasarkan role
         Widget targetPage;
